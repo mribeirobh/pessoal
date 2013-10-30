@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>jQuery.getJSON demo</title>
+  <style>
+  img {
+    height: 100px;
+    float: left;
+  }
+  </style>
+ <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+  <script type="text/javascript">
+    var mapPoints;
+	
+	function dataTable(){
+		var items = [];
+		//var url = "https://spreadsheets.google.com/feeds/cells/0ArARt1rG4oCtdEZmcFlLS05yaXFMR0VFUFVkU1RFWnc/od6/public/basic?alt=json";
+		var url = "https://spreadsheets.google.com/feeds/list/0ArARt1rG4oCtdEZmcFlLS05yaXFMR0VFUFVkU1RFWnc/od6/public/basic?alt=json";
+		$.getJSON(url).success(
+			function(data) {				
+					$(data.feed.entry).each(function(){
+							items.push("<li>" + this.title.$t + "</li>");
+						})
+			})
+			.error(
+				function(message) {
+					console.error('error' + message); 
+				})
+			.complete(function() {
+						$( "<ul/>", {
+						html: items.join( "" )
+			}).appendTo( "body" );
+		});	
+		}	
+		
+	$( document ).ready(function() {	
+		dataTable();
+	});
+</script>
+
+</head>
+<body> <!--onload="getPoints()"-->
+</body>
+</html>

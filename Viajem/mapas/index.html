@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />	
+	<style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map_canvas { height: 100% }
+    </style>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyAPFEHXrRMg9EHv03SgU47ILMG9ROSajSY&sensor=false"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>	
+    <script type="text/javascript">	
+		jQuery.support.cors = true; //Enable cross site for jquery in IE.
+		
+		var iconPath = "https://googledrive.com/host/0B7ARt1rG4oCtVkVJeXFzUVhxRWc/";		
+		var allPoints = [];
+		var activePoints = [];
+		var listCountries = [];
+		var map;
+		var centerMap;
+		
+        //Data Manipulation		
+		function dataTable(){
+			var dataSheetUrl = "https://spreadsheets.google.com/feeds/cells/0ArARt1rG4oCtdEZmcFlLS05yaXFMR0VFUFVkU1RFWnc/od6/public/basic?alt=json";
+			$.ajax({
+					url: dataSheetUrl,
+					cache: false,
+					dataType: "json",
+					success: function(data){
+						processData(data);
+						setListCities(fillCombo('#listCountries', 0, listCountries));
+					},
+					error:	function (request, status, error) {
+						console.error('error:' + error + " message: " + status); 
+					},
+					complete: function(){						
+						initialize();
+					}
+			});
+		}
+		
+		function point(title, lat, lon, type, country, city, icon){
+			
+			this.pointMark = {
+					scale: 3,
+					fillColor: "red",
+					strokeColor: "red",
+					strokeWeight: 2,
+					fillOpacity: 1,
+					path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW
+				};
+			
+			this.marker = new google.maps.Marker({
+				position: new google.maps.LatLng(lat.replace(",","."), lon.replace(",",".")),
+				title:title,
+				icon:(icon != 'default') ? iconPath + icon + '.png' : ''
+			});
+			
+			var info = '<div style="height:30px;width:150px;text-align:center"><span>'+ title + '</span></div>';
+			this.infoWindow = new google.maps.InfoWindow({
+										content:info
+								});	
+								
+			this.country=country;			
+			this.type=type;
+			this.city=city;
+			
+			google.maps.event.addListener(this.marker, 'click', function(){						
+				resetInfoWindow(this);
+			});
+		}
+		
+		function processData(data){
+			var countCollum = 7;
+			for(var i = countCollum; i < data.feed.entry.length; i+=countCollum){
+			    var c = i;
+				var npoint = new point(data.feed.entry[c].content.$t,
+									   data.feed.entry[++c].content.$t,
+									   data.feed.entry[++c].content.$t,
+									   data.feed.entry[++c].content.$t,
+									   data.feed.entry[++c].content.$t,
+									   data.feed.entry[++c].content.$t,
+									   data.feed.entry[++c].content.$t);
+				allPoints.push(npoint);
+				setListCountries(npoint);
+			}
+		}
+		
+		function searchData(item, data){
+			found = false;
+			for(var i = 0; i < data.length; i++){
+				if((found = (data[i].indexOf(item) != -1))){
+					break;
+				 }
+			}
+			return found;
+		}
+		
+		function changeAction(obj){
+			if(obj.id == 'listCountries'){								
+				setListCities(obj.options[obj.selectedIndex].text);
+			}
+			if(obj.id == 'listCities'){
+				setActivePoints(obj.options[obj.selectedIndex].text);
+			}
+			showActivePoints();	
+		}
+		
+		//GUI Format	
+		function initialize() {        
+			var mapOptions = {
+				center: centerMap.marker.getPosition(),
+				zoom: 12,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
+			};
+			map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+			showActivePoints();		
+        }	
+		
+		function resetInfoWindow(marker){
+			for (var i=0; i < activePoints.length;i++){				
+				if(activePoints[i].marker == marker)
+					{
+						activePoints[i].infoWindow.close();
+						activePoints[i].infoWindow.open(map,marker);
+						break;
+					}
+			}
+		}
+				
+		function formatedInfoText(text){
+			var formattedText = '<div><span>' + text + '<span></div>'
+			return formattedText;
+		}
+		
+		function setListCountries(point){			
+			if(!searchData(point.country, listCountries)){
+				listCountries.push(point.country);
+			}			
+		}
+		
+		function setListCities(country){			
+			var listCities = [];
+			var position = 0;
+			for(var i = 0; i < allPoints.length; i++){
+				if(allPoints[i].country == country && !searchData(allPoints[i].city, listCities)){
+					listCities.push(allPoints[i].city);
+					position++;
+				}
+			}
+			return setActivePoints(fillCombo('#listCities',0, listCities));
+		}
+		
+		function removeActivePoints(){			
+			for(var i = 0; i < activePoints.length; i++){
+					activePoints[i].infoWindow.close();	
+					activePoints[i].marker.setMap(null);
+				}
+			activePoints = [];
+		}
+		
+		function setActivePoints(city){			
+			removeActivePoints();
+			for(var i = 0; i < allPoints.length; i++){
+				if(allPoints[i].city == city){
+					(allPoints[i].type == 0) ? activePoints.unshift(allPoints[i]) : activePoints.push(allPoints[i]);
+				}
+			}
+			centerMap = activePoints[0];
+		}
+		
+		function showActivePoints(){
+			var count = activePoints.length;
+			var open = false;
+			for(var i = 0; i < count; i++){
+				if(activePoints[i].type != 0){										
+					activePoints[i].marker.setMap(map);
+					if((count-i) == 1){
+						google.maps.event.addListenerOnce(activePoints[i].infoWindow, 'domready', function(){						
+							map.panTo(centerMap.marker.getPosition());
+						});
+						activePoints[i].infoWindow.open(map,activePoints[i].marker);
+					}
+					//activePoints[i].infoWindow.open(map,activePoints[i].marker);
+				}
+			}			
+		}
+					
+		function fillCombo(comboId, index, data){
+			var setCombo = $(comboId);
+			setCombo.html('');
+			for(var i = 0; i < data.length;i++){
+				var item = data[i];
+				setCombo.append('<option value ="' + i +'">' + item + '</option>');
+			}		
+			setCombo.val(index);
+			return (setCombo.children("option:selected").text());
+		}
+
+		function init(){
+            dataTable();		
+		}
+    </script>
+  </head>
+  <body onload="init()">
+	<div style="margin-left:10px;">
+	<span>País:</span>
+	<select id="listCountries" onchange="changeAction(this);"></select>
+	<span>Cidade:</span>
+	<select id="listCities" onchange="changeAction(this);"></select>
+	</div>
+    <div id="map_canvas" style="width:100%; height:100%"></div>
+  </body>
+</html>

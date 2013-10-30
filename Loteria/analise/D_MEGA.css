@@ -1,0 +1,90 @@
+span{
+	margin-left:5px;
+	font-weight:bold;
+}
+
+.values{
+	float:left;
+	width:15%;
+}
+
+.board{
+	width:85%;
+	left:50%;
+	float:left;
+}
+
+.top{
+	width: 100%; 
+	height: 5%;
+	border-bottom: 1px solid black;
+}
+
+.middle{
+	width: 100%; 
+	height: 55%;
+	overflow:hidden;
+	position:relative;
+	
+}
+
+.bottom{
+	width: 100%; 
+	height: 40%;
+	position:relative;
+	border-top:1px solid black;
+}
+
+.datetime{
+	text-align:center;
+}
+
+.frame{
+	border: none;
+	width: 50%;
+	margin-left:25%;
+}
+
+.framedata{
+	height:50%;
+	width:100%;
+}
+	
+.analise{
+	position:relative;
+}
+		
+.graph{
+	display:block;
+	width:100%;
+	height:auto;
+}
+		
+.numbersInfo{
+	//text-align:center;
+	float:left;
+}
+		
+.numberUnit{
+	display:inline;
+	position:relative;
+	width:15%;
+	float:left;
+	font-weight:bold;
+	border:1px solid;
+}
+.number{
+	display:block;
+	width:100%;
+	background-color:#CCCCCC;
+	//opacity:0.6;
+	position:relative;
+}
+		
+.numbersStatical{
+	width:100%;
+}
+				
+.dataSummary{
+	width:100%;
+}

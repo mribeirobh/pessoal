@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+function changeStyle()
+{
+var x=document.getElementById("myframe");
+var y=(x.contentWindow || x.contentDocument);
+if (y.document)y=y.document;
+y.body.style.backgroundColor="#0000ff";
+}
+
+function showIframeContent(id) {
+  var iframe = document.getElementById(id);
+    try {
+      var doc = (iframe.contentDocument)? iframe.contentDocument: iframe.contentWindow.document;
+      alert(doc.body.innerHTML);
+    }
+    catch(e) {
+       alert(e.message);
+    }
+  return false;
+}
+
+</script>
+</head>
+<body>
+
+<iframe id="myframe" src="file:///D:/marcelo/pessoal/Loteria/D_megase/D_MEGA.htm">
+<p>Your browser does not support iframes.</p>
+</iframe>
+<br><br>
+
+<input type="button" onclick="changeStyle()" value="Change background color">
+
+<!--iframe id='iframe_id1' src="javascript:parent.somehtml()"> </iframe>
+<br/>
+<a href="#" onclick="return showIframeContent('iframe_id1')">Show</a>
+<hr/>
+
+<iframe id='iframe_id2' src="http://plungjan.name/"> </iframe>
+<br/>
+<a href="#" onclick="return showIframeContent('iframe_id2')">Show</a>
+<hr/-->
+
+</body>
+</html>
